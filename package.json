@@ -13,5 +13,6 @@
     "browserify": "13.0.0",
     "minifyify": "7.1.0"
   },
-  "main" : "dist/bundle.min.js"
+  "main" : "dist/bundle.min.js",
+  "version": "1.0.0"
 }
