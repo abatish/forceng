@@ -1,0 +1,16 @@
+{
+  "author": "John Benson",
+  "repository": "https://github.com/john-benson/forceng.git",
+  "dependencies": {
+    "angular": "1.4.8"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "browserify --debug ./forceng.js -p [minifyify --map dist/bundle.map.json --output dist/bundle.map.json] > dist/bundle.min.js"
+  },
+  "devDependencies": {
+    "browserify": "13.0.0",
+    "minifyify": "7.1.0"
+  },
+  "main" : "dist/bundle.min.js"
+}
