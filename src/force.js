@@ -1,3 +1,5 @@
+var angular = require('angular');
+
 module.exports = function ($rootScope, $q, $window, $http) {
   // The login URL for the OAuth process
   // To override default, pass loginURL in init(props)
