@@ -168,15 +168,7 @@ module.exports = function ($rootScope, $q, $window, $http) {
    */
   function init(params) {
     initCalled = true;
-
-    if(!params.appId) {
-      throw 'forceng appId is required on init';
-    }
-
-    if(!params.oauthCallbackURL) {
-      throw 'forceng oauthCallbackURL is requried on init';
-    }
-
+  
     appId = params.appId;
     oauthCallbackURL = params.oauthCallbackURL;
 
@@ -225,7 +217,7 @@ module.exports = function ($rootScope, $q, $window, $http) {
       obj = parseQueryString(queryString);
       oauth = obj;
       tokenStore['forceOAuth'] = JSON.stringify(oauth);
-      if (deferredLogin) deferredLogin.resolve();
+      if (deferredLogin) deferredLogin.resolve(obj);
     } else if (url.indexOf("error=") > 0) {
       queryString = decodeURIComponent(url.substring(url.indexOf('?') + 1));
       obj = parseQueryString(queryString);
@@ -236,22 +228,26 @@ module.exports = function ($rootScope, $q, $window, $http) {
   }
 
   function proxyRequired() {
-    return (window.cordova || window.SfdcApp);
+    return !angular.isDefined(window.cordova) && !angular.isDefined(window.SfdcApp);
+  }
+
+  function canUsePlugin() {
+    return angular.isDefined(window.cordova);
   }
 
   /**
    * Login to Salesforce using OAuth. If running in a Browser, the OAuth workflow happens in a a popup window.
    */
   function login() {
-    if(!initCalled) {
-      throw 'init must be called before a login is attempted';
-    }
-
     deferredLogin = $q.defer();
-    if (!proxyRequired()) {
-      loginWithPlugin();
+    if(!initCalled) {
+      deferredLogin.reject('you must call init before login');
     } else {
-      loginWithBrowser();
+      if (canUsePlugin()) {
+        loginWithPlugin();
+      } else {
+        loginWithBrowser();
+      }
     }
     return deferredLogin.promise;
   }
@@ -307,63 +303,62 @@ module.exports = function ($rootScope, $q, $window, $http) {
    *  data:  JSON object to send in the request body - Optional
    */
   function request(obj) {
-
-    if(!initCalled) {
-      throw 'ForceNG init was not called; you must call init before making requests';
-    }
-
     var method = obj.method || 'GET',
       headers = {},
       url = getRequestBaseURL(),
-      deferred = $q.defer();
+      deferred = $q.defer
 
-    if (!oauth || (!oauth.access_token && !oauth.refresh_token)) {
-      deferred.reject('No access token. Login and try again.');
-      return deferred.promise;
-    }
+    if(!initCalled) {
+      deferred.reject('you must call init before making any requests');
+    } else {
+      if (!oauth || (!oauth.access_token && !oauth.refresh_token)) {
+        deferred.reject('No access token. Login and try again.');
+        return deferred.promise;
+      }
 
-    // dev friendly API: Add leading '/' if missing so url + path concat always works
-    if (obj.path.charAt(0) !== '/') {
-      obj.path = '/' + obj.path;
-    }
+      // dev friendly API: Add leading '/' if missing so url + path concat always works
+      if (obj.path.charAt(0) !== '/') {
+        obj.path = '/' + obj.path;
+      }
 
-    url = url + obj.path;
+      url = url + obj.path;
 
-    headers["Authorization"] = "Bearer " + oauth.access_token;
-    if (obj.contentType) {
-      headers["Content-Type"] = obj.contentType;
-    }
-    if (useProxy) {
-      headers["Target-URL"] = oauth.instance_url;
-    }
+      headers["Authorization"] = "Bearer " + oauth.access_token;
+      if (obj.contentType) {
+        headers["Content-Type"] = obj.contentType;
+      }
+      if (useProxy) {
+        headers["Target-URL"] = oauth.instance_url;
+      }
 
-    $http({
-      headers: headers,
-      method: method,
-      url: url,
-      params: obj.params,
-      data: obj.data
-    })
-      .success(function (data, status, headers, config) {
-        deferred.resolve(data);
+      $http({
+        headers: headers,
+        method: method,
+        url: url,
+        params: obj.params,
+        data: obj.data
       })
-      .error(function (data, status, headers, config) {
-        if (status === 401 && oauth.refresh_token) {
-          refreshToken()
-            .success(function () {
-              // Try again with the new token
-              request(obj);
-            })
-            .error(function () {
-              console.error(data);
-              deferred.reject(data);
-            });
-        } else {
-          console.error(data);
-          deferred.reject(data);
-        }
+        .success(function (data, status, headers, config) {
+          deferred.resolve(data);
+        })
+        .error(function (data, status, headers, config) {
+          if (status === 401 && oauth.refresh_token) {
+            refreshToken()
+              .success(function () {
+                // Try again with the new token
+                request(obj);
+              })
+              .error(function () {
+                console.error(data);
+                deferred.reject(data);
+              });
+          } else {
+            console.error(data);
+            deferred.reject(data);
+          }
 
-      });
+        });
+    }
 
     return deferred.promise;
   }
@@ -545,3 +540,13 @@ module.exports = function ($rootScope, $q, $window, $http) {
   };
 
 };
+var ForceNG = window.ForceNG || {};
+
+ForceNG.oauthCallback = function (url) {
+  var injector = angular.element(document.body).injector();
+  injector.invoke(function (force) {
+    force.oauthCallback(url);
+  });
+}
+
+window.ForceNG = ForceNG;
