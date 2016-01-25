@@ -1,6 +1,5 @@
 var angular = require('angular');
-
-module.exports = function ($rootScope, $q, $window, $http) {
+module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) {
   // The login URL for the OAuth process
   // To override default, pass loginURL in init(props)
   var loginURL = 'https://login.salesforce.com',
@@ -33,7 +32,7 @@ module.exports = function ($rootScope, $q, $window, $http) {
 
   // if page URL is http://localhost:3000/myapp/index.html, oauthCallbackURL is http://localhost:3000/myapp/oauthcallback.html
   // To override default, pass oauthCallbackURL in init(props)
-    oauthCallbackURL,
+    oauthCallbackURL = "http://localhost/callback",
 
   // Because the OAuth login spans multiple processes, we need to keep the login success and error handlers as a variables
   // inside the module instead of keeping them local within the login function.
@@ -168,9 +167,11 @@ module.exports = function ($rootScope, $q, $window, $http) {
    */
   function init(params) {
     initCalled = true;
-  
+
     appId = params.appId;
-    oauthCallbackURL = params.oauthCallbackURL;
+
+    //ignore the oauthCallbackUrl in Cordova
+    oauthCallbackURL = (isCordova() ? oauthCallbackURL : params.oauthCallbackURL || oauthCallbackURL);
 
     apiVersion = params.apiVersion || apiVersion;
     loginURL = params.loginURL || loginURL;
@@ -202,37 +203,12 @@ module.exports = function ($rootScope, $q, $window, $http) {
     tokenStore.forceOAuth = JSON.stringify(oauth);
   }
 
-  /**
-   * Called internally either by oauthcallback.html (when the app is running the browser)
-   * @param url - The oauthCallbackURL called by Salesforce at the end of the OAuth workflow. Includes the access_token in the querystring
-   */
-  function oauthCallback(url) {
-
-    // Parse the OAuth data received from Facebook
-    var queryString,
-      obj;
-
-    if (url.indexOf("access_token=") > 0) {
-      queryString = url.substr(url.indexOf('#') + 1);
-      obj = parseQueryString(queryString);
-      oauth = obj;
-      tokenStore['forceOAuth'] = JSON.stringify(oauth);
-      if (deferredLogin) deferredLogin.resolve(obj);
-    } else if (url.indexOf("error=") > 0) {
-      queryString = decodeURIComponent(url.substring(url.indexOf('?') + 1));
-      obj = parseQueryString(queryString);
-      if (deferredLogin) deferredLogin.reject(obj);
-    } else {
-      if (deferredLogin) deferredLogin.reject({status: 'access_denied'});
-    }
-  }
-
   function proxyRequired() {
-    return !angular.isDefined(window.cordova) && !angular.isDefined(window.SfdcApp);
+    return !angular.isDefined($window.cordova) && !angular.isDefined($window.SfdcApp);
   }
 
-  function canUsePlugin() {
-    return angular.isDefined(window.cordova);
+  function isCordova() {
+    return angular.isDefined($window.cordova);
   }
 
   /**
@@ -243,39 +219,61 @@ module.exports = function ($rootScope, $q, $window, $http) {
     if(!initCalled) {
       deferredLogin.reject('you must call init before login');
     } else {
-      if (canUsePlugin()) {
-        loginWithPlugin();
-      } else {
-        loginWithBrowser();
-      }
+      openOauthLogin(deferredLogin);
     }
     return deferredLogin.promise;
   }
 
-  function loginWithPlugin() {
-    document.addEventListener("deviceready", function () {
-      oauthPlugin = cordova.require("com.salesforce.plugin.oauth");
-      if (!oauthPlugin) {
-        console.error('Salesforce Mobile SDK OAuth plugin not available');
-        if (deferredLogin) deferredLogin.reject({status: 'Salesforce Mobile SDK OAuth plugin not available'});
-        return;
+  function getAuthorizeUrl() {
+    return loginURL+'services/oauth2/authorize?display=touch'+
+      '&response_type=token&client_id='+appId+
+      '&redirect_uri='+oauthCallbackURL;
+  };
+
+  function handleOauthRedirect(url, browserRef, deferred) {
+    if(url && url.startsWith(oauthCallbackURL)) {
+      var oauthResponse = parseQueryString((url).split('#')[1]);
+
+      if (typeof oauthResponse === 'undefined' ||
+        typeof oauthResponse.access_token === 'undefined') {
+        deferred.reject("Problem authenticating");
+      } else {
+        oauth = oauthResponse;
+        tokenStore['forceOAuth'] = JSON.stringify(oauth);
+        deferred.resolve(oauthResponse);
       }
-      oauthPlugin.getAuthCredentials(
-        function (creds) {
-          // Initialize ForceJS
-          init({accessToken: creds.accessToken, instanceURL: creds.instanceUrl, refreshToken: creds.refreshToken});
-          if (deferredLogin) deferredLogin.resolve();
-        },
-        function (error) {
-          if (deferredLogin) deferredLogin.reject(error);
-        }
-      );
-    }, false);
+
+      $timeout(function() {
+        browserRef.close();
+      }, 10);
+    }
   }
 
-  function loginWithBrowser() {
-    var loginWindowURL = loginURL + '/services/oauth2/authorize?client_id=' + appId + '&redirect_uri=' + oauthCallbackURL + '&response_type=token';
-    window.open(loginWindowURL, '_blank', 'location=no');
+  function openOauthLogin(deferred) {
+
+    if(isCordova() && !cordova.InAppBrowser) {
+      return deferred.reject('cordova-plugin-inappbrowser is required to run forceNg');
+    }
+
+    var browserRef = $window.open(getAuthorizeUrl(), "_blank", "location=no,clearsessioncache=yes,clearcache=yes");
+
+    if(isCordova()) {
+      browserRef.addEventListener("loadstart", function(event) {
+        handleOauthRedirect(event.url, browserRef, deferred);
+      });
+    } else {
+      var interval = $interval(function () {
+        try {
+          if(!browserRef.window) {
+            $interval.cancel(interval);
+          }
+
+          handleOauthRedirect(browserRef.location.href, browserRef, deferred);
+        } catch (e) { }
+      }, 100);
+    }
+
+
   }
 
   /**
@@ -535,18 +533,7 @@ module.exports = function ($rootScope, $q, $window, $http) {
     retrieve: retrieve,
     apexrest: apexrest,
     chatter: chatter,
-    discardToken: discardToken,
-    oauthCallback: oauthCallback
+    discardToken: discardToken
   };
 
 };
-var ForceNG = window.ForceNG || {};
-
-ForceNG.oauthCallback = function (url) {
-  var injector = angular.element(document.body).injector();
-  injector.invoke(function (force) {
-    force.oauthCallback(url);
-  });
-}
-
-window.ForceNG = ForceNG;
