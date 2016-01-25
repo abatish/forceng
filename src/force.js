@@ -1,5 +1,4 @@
-var angular = require('angular'),
-    url = require('url');
+var angular = require('angular');
 
 module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) {
   // The login URL for the OAuth process
@@ -227,9 +226,9 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
   }
 
   function getAuthorizeUrl() {
-    return url.resolve(loginURL, 'services/oauth2/authorize') +
-      '?display=touch' + 
-      '&response_type=token&client_id= ' + appId+
+    return loginURL + '/services/oauth2/authorize' +
+      '?display=touch' +
+      '&response_type=token&client_id=' + appId+
       '&redirect_uri=' + oauthCallbackURL;
   };
 
