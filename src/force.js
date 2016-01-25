@@ -228,7 +228,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
 
   function getAuthorizeUrl() {
     return url.resolve(loginURL, 'services/oauth2/authorize') +
-      '?display=touch'
+      '?display=touch' + 
       '&response_type=token&client_id= ' + appId+
       '&redirect_uri=' + oauthCallbackURL;
   };
