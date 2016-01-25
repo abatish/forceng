@@ -1,4 +1,6 @@
-var angular = require('angular');
+var angular = require('angular'),
+    url = require('url');
+
 module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) {
   // The login URL for the OAuth process
   // To override default, pass loginURL in init(props)
@@ -225,9 +227,10 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
   }
 
   function getAuthorizeUrl() {
-    return loginURL+'services/oauth2/authorize?display=touch'+
-      '&response_type=token&client_id='+appId+
-      '&redirect_uri='+oauthCallbackURL;
+    return url.resolve(loginURL, 'services/oauth2/authorize') +
+      '?display=touch'
+      '&response_type=token&client_id= ' + appId+
+      '&redirect_uri=' + oauthCallbackURL;
   };
 
   function handleOauthRedirect(url, browserRef, deferred) {
