@@ -248,7 +248,11 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
       $timeout(function() {
         browserRef.close();
       }, 10);
+
+      return true;
     }
+
+    return false;
   }
 
   function openOauthLogin(deferred) {
@@ -266,11 +270,16 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     } else {
       var interval = $interval(function () {
         try {
+
           if(!browserRef.window) {
+            deferred.reject('login flow was cancelled by user');
             $interval.cancel(interval);
           }
 
-          handleOauthRedirect(browserRef.location.href, browserRef, deferred);
+          if(handleOauthRedirect(browserRef.location.href, browserRef, deferred)) {
+            $interval.cancel(interval);
+          }
+
         } catch (e) { }
       }, 100);
     }
