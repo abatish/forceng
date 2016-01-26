@@ -232,7 +232,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
       '&redirect_uri=' + oauthCallbackURL;
   };
 
-  function handleOauthRedirect(url, browserRef, deferred) {
+  function handleOauthRedirect(url, browserRef, deferred, interval) {
     if(url && url.startsWith(oauthCallbackURL)) {
       var oauthResponse = parseQueryString((url).split('#')[1]);
 
@@ -243,6 +243,10 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
         oauth = oauthResponse;
         tokenStore['forceOAuth'] = JSON.stringify(oauth);
         deferred.resolve(oauthResponse);
+      }
+
+      if(interval) {
+        $interval.cancel(interval);
       }
 
       $timeout(function() {
@@ -257,7 +261,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
 
   function openOauthLogin(deferred) {
 
-    if(isCordova() && !cordova.InAppBrowser) {
+    if(isCordova() && !$window.cordova.InAppBrowser) {
       return deferred.reject('cordova-plugin-inappbrowser is required to run forceNg');
     }
 
@@ -268,17 +272,20 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
         handleOauthRedirect(event.url, browserRef, deferred);
       });
     } else {
+      var oauthHandled = false;
+
       var interval = $interval(function () {
         try {
 
           if(!browserRef.window) {
-            deferred.reject('login flow was cancelled by user');
             $interval.cancel(interval);
+
+            if(!oauthHandled) {
+              deferred.reject('login flow was cancelled by user');
+            }
           }
 
-          if(handleOauthRedirect(browserRef.location.href, browserRef, deferred)) {
-            $interval.cancel(interval);
-          }
+          oauthHandled = handleOauthRedirect(browserRef.location.href, browserRef, deferred, interval);
 
         } catch (e) { }
       }, 100);
