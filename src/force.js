@@ -220,7 +220,11 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     if(!initCalled) {
       deferredLogin.reject('you must call init before login');
     } else {
-      openOauthLogin(deferredLogin);
+      if(isCordova()) {
+        loginWithPlugin(deferredLogin);
+      } else {
+        openOauthLogin(deferredLogin);
+      }
     }
     return deferredLogin.promise;
   }
@@ -249,6 +253,29 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
         browserRef.close();
       }, 10);
     }
+  }
+
+
+  function loginWithPlugin(deferredLogin) {
+    document.addEventListener("deviceready", function () {
+      oauthPlugin = cordova.require("com.salesforce.plugin.oauth");
+      if (!oauthPlugin) {
+        console.error('Salesforce Mobile SDK OAuth plugin not available');
+        if (deferredLogin) deferredLogin.reject({status: 'Salesforce Mobile SDK OAuth plugin not available'});
+        return;
+      }
+      oauthPlugin.getAuthCredentials(
+        function (creds) {
+          // Initialize ForceJS
+          init({accessToken: creds.accessToken, instanceURL: creds.instanceUrl, refreshToken: creds.refreshToken});
+          if (deferredLogin) deferredLogin.resolve();
+        },
+        function (error) {
+          console.log(error);
+          if (deferredLogin) deferredLogin.reject(error);
+        }
+      );
+    }, false);
   }
 
   function openOauthLogin(deferred) {
