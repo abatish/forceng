@@ -7,8 +7,9 @@
     "install": "napa"
   },
   "dependencies": {
-    "angular": "1.4.8"
+    "angular": "1.4.8",
+    "lodash": "4.0.1"
   },
   "main" : "src/forceng.js",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

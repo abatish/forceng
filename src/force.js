@@ -99,7 +99,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
         deferred.resolve();
       },
       function () {
-        console.log('Error refreshing oauth access token using the oauth plugin');
         deferred.reject();
       });
   }
@@ -169,7 +168,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
   function init(params) {
     initCalled = true;
 
-    appId = params.appId;
+    appId = params.appId || appId;
 
     //ignore the oauthCallbackUrl in Cordova
     oauthCallbackURL = (isCordova() ? oauthCallbackURL : params.oauthCallbackURL || oauthCallbackURL);
@@ -179,19 +178,19 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     proxyURL = params.proxyURL || proxyURL;
     useProxy = params.useProxy === undefined ? useProxy : params.useProxy;
 
-    if (params.accessToken) {
+    if (params.access_token) {
       if (!oauth) oauth = {};
-      oauth.access_token = params.accessToken;
+      oauth.access_token = params.access_token;
     }
 
-    if (params.instanceURL) {
+    if (params.instance_url) {
       if (!oauth) oauth = {};
-      oauth.instance_url = params.instanceURL;
+      oauth.instance_url = params.instance_url;
     }
 
-    if (params.refreshToken) {
+    if (params.refresh_token) {
       if (!oauth) oauth = {};
-      oauth.refresh_token = params.refreshToken;
+      oauth.refresh_token = params.refresh_token;
     }
 
   }
@@ -249,9 +248,9 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
         $interval.cancel(interval);
       }
 
-      $timeout(function() {
+      $timeout(function () {
         browserRef.close();
-      }, 10);
+      }, 10)
 
       return true;
     }
@@ -274,21 +273,26 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     } else {
       var oauthHandled = false;
 
+      // this is very hacky; but I way less like having a random HTML file being hosted
+      // just for dev. this interval should be short enough that it will reliabliy catch
+      // the params
       var interval = $interval(function () {
         try {
-
           if(!browserRef.window) {
+
             $interval.cancel(interval);
 
             if(!oauthHandled) {
               deferred.reject('login flow was cancelled by user');
             }
+
+            return;
           }
 
           oauthHandled = handleOauthRedirect(browserRef.location.href, browserRef, deferred, interval);
 
         } catch (e) { }
-      }, 100);
+      }, 10);
     }
 
 
@@ -322,7 +326,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     var method = obj.method || 'GET',
       headers = {},
       url = getRequestBaseURL(),
-      deferred = $q.defer
+      deferred = $q.defer()
 
     if(!initCalled) {
       deferred.reject('you must call init before making any requests');
@@ -534,7 +538,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
 
     return request(params);
 
-  }
+  } 
 
   // The public API
   return {
