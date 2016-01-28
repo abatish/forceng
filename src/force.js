@@ -132,24 +132,18 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
       params: params
     })
       .success(function (data, status, headers, config) {
-        console.log('Token refreshed');
         oauth.access_token = data.access_token;
         tokenStore.forceOAuth = JSON.stringify(oauth);
         deferred.resolve();
       })
       .error(function (data, status, headers, config) {
-        console.log('Error while trying to refresh token');
         deferred.reject();
       });
   }
 
   function refreshToken() {
     var deferred = $q.defer();
-    if (oauthPlugin) {
-      refreshTokenWithPlugin(deferred);
-    } else {
-      refreshTokenWithHTTPRequest(deferred);
-    }
+    refreshTokenWithHTTPRequest(deferred);
     return deferred.promise;
   }
 
@@ -322,11 +316,11 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
    *  params:  queryString parameters as a map - Optional
    *  data:  JSON object to send in the request body - Optional
    */
-  function request(obj) {
+  function request(obj, deferred) {
     var method = obj.method || 'GET',
       headers = {},
       url = getRequestBaseURL(),
-      deferred = $q.defer()
+      deferred = deferred || $q.defer()
 
     if(!initCalled) {
       deferred.reject('you must call init before making any requests');
@@ -363,17 +357,10 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
         })
         .error(function (data, status, headers, config) {
           if (status === 401 && oauth.refresh_token) {
-            refreshToken()
-              .success(function () {
-                // Try again with the new token
-                request(obj);
-              })
-              .error(function () {
-                console.error(data);
-                deferred.reject(data);
-              });
+            refreshToken().then(function () {
+              request(obj, deferred); // repeat the process; passing in our promise
+            });
           } else {
-            console.error(data);
             deferred.reject(data);
           }
 
@@ -538,7 +525,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
 
     return request(params);
 
-  } 
+  }
 
   // The public API
   return {
