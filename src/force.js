@@ -1,4 +1,5 @@
 var angular = require('angular');
+var _ = require('lodash');
 
 module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) {
   // The login URL for the OAuth process
@@ -16,7 +17,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     apiVersion = 'v33.0',
 
   // Keep track of OAuth data (access_token, refresh_token, and instance_url)
-    oauth,
+    oauth = {},
 
   // By default we store fbtoken in sessionStorage. This can be overridden in init()
     tokenStore = {},
@@ -33,7 +34,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
 
   // if page URL is http://localhost:3000/myapp/index.html, oauthCallbackURL is http://localhost:3000/myapp/oauthcallback.html
   // To override default, pass oauthCallbackURL in init(props)
-    oauthCallbackURL = "http://localhost/callback",
+    oauthCallbackURL = "http://localhost",
 
   // Because the OAuth login spans multiple processes, we need to keep the login success and error handlers as a variables
   // inside the module instead of keeping them local within the login function.
@@ -45,6 +46,10 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
   // Whether or not to use a CORS proxy. Defaults to false if app running in Cordova or in a VF page
   // Can be overriden in init()
   useProxy = proxyRequired() ? true : false;
+
+  function getOauthInformation  () {
+    return oauth;
+  }
 
   /*
    * Determines the request base URL.
@@ -165,7 +170,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     appId = params.appId || appId;
 
     //ignore the oauthCallbackUrl in Cordova
-    oauthCallbackURL = (isCordova() ? oauthCallbackURL : params.oauthCallbackURL || oauthCallbackURL);
+    oauthCallbackURL = (isCordova() ? oauthCallbackURL : (params.oauthCallbackURL || oauthCallbackURL));
 
     apiVersion = params.apiVersion || apiVersion;
     loginURL = params.loginURL || loginURL;
@@ -173,17 +178,14 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     useProxy = params.useProxy === undefined ? useProxy : params.useProxy;
 
     if (params.access_token) {
-      if (!oauth) oauth = {};
       oauth.access_token = params.access_token;
     }
 
     if (params.instance_url) {
-      if (!oauth) oauth = {};
       oauth.instance_url = params.instance_url;
     }
 
     if (params.refresh_token) {
-      if (!oauth) oauth = {};
       oauth.refresh_token = params.refresh_token;
     }
 
@@ -233,7 +235,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
         typeof oauthResponse.access_token === 'undefined') {
         deferred.reject("Problem authenticating");
       } else {
-        oauth = oauthResponse;
+        _.extend(oauth, oauthResponse);
         tokenStore['forceOAuth'] = JSON.stringify(oauth);
         deferred.resolve(oauthResponse);
       }
@@ -542,6 +544,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     retrieve: retrieve,
     apexrest: apexrest,
     chatter: chatter,
+    oauth: oauth,
     discardToken: discardToken
   };
 
