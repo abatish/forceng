@@ -19,9 +19,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
   // Keep track of OAuth data (access_token, refresh_token, and instance_url)
     oauth = {},
 
-  // By default we store fbtoken in sessionStorage. This can be overridden in init()
-    tokenStore = {},
-
   // if page URL is http://localhost:3000/myapp/index.html, context is /myapp
     context,
 
@@ -100,7 +97,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     oauthPlugin.authenticate(
       function (response) {
         oauth.access_token = response.accessToken;
-        tokenStore.forceOAuth = JSON.stringify(oauth);
         deferred.resolve();
       },
       function () {
@@ -138,7 +134,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     })
       .success(function (data, status, headers, config) {
         oauth.access_token = data.access_token;
-        tokenStore.forceOAuth = JSON.stringify(oauth);
         deferred.resolve();
       })
       .error(function (data, status, headers, config) {
@@ -170,7 +165,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     appId = params.appId || appId;
 
     //ignore the oauthCallbackUrl in Cordova
-    oauthCallbackURL = (isCordova() ? oauthCallbackURL : (params.oauthCallbackURL || oauthCallbackURL));
+    oauthCallbackURL = params.oauthCallbackURL || oauthCallbackURL;
 
     apiVersion = params.apiVersion || apiVersion;
     loginURL = params.loginURL || loginURL;
@@ -191,12 +186,17 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
 
   }
 
+  function discardOauth() {
+    for(var p in oauth) {
+      oauth[p] = null;
+    }
+  }
+
   /**
    * Discard the OAuth access_token. Use this function to test the refresh token workflow.
    */
   function discardToken() {
     delete oauth.access_token;
-    tokenStore.forceOAuth = JSON.stringify(oauth);
   }
 
   function proxyRequired() {
@@ -236,7 +236,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
         deferred.reject("Problem authenticating");
       } else {
         _.extend(oauth, oauthResponse);
-        tokenStore['forceOAuth'] = JSON.stringify(oauth);
         deferred.resolve(oauthResponse);
       }
 
@@ -361,6 +360,9 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
           if (status === 401 && oauth.refresh_token) {
             refreshToken().then(function () {
               request(obj, deferred); // repeat the process; passing in our promise
+            }, function () {
+              discardOauth();
+              deferred.reject();
             });
           } else {
             deferred.reject(data);
