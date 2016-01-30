@@ -318,6 +318,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
    *  data:  JSON object to send in the request body - Optional
    */
   function request(obj, deferred) {
+
     var method = obj.method || 'GET',
       headers = {},
       url = getRequestBaseURL(),
@@ -357,14 +358,20 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
           deferred.resolve(data);
         })
         .error(function (data, status, headers, config) {
-          if (status === 401 && oauth.refresh_token) {
-            refreshToken().then(function () {
-              request(obj, deferred); // repeat the process; passing in our promise
-            }, function () {
+          if (status === 401) {
+            if(oauth.refresh_token) {
+              refreshToken().then(function () {
+                request(obj, deferred); // repeat the process; passing in our promise
+              }, function () {
+                discardOauth();
+                deferred.reject();
+              });
+            } else {
               discardOauth();
               deferred.reject();
-            });
-          } else {
+            }
+          }
+          else {
             deferred.reject(data);
           }
 
