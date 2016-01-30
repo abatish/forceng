@@ -184,6 +184,10 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
       oauth.refresh_token = params.refresh_token;
     }
 
+    if (params.id) {
+      oauth.id = params.id;
+    }
+
   }
 
   function discardOauth() {
@@ -298,7 +302,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
    * @returns {string} | undefined
    */
   function getUserId() {
-    return (typeof(oauth) !== 'undefined') ? oauth.id.split('/').pop() : undefined;
+    return (typeof(oauth) !== 'undefined' && !!oauth.id) ? oauth.id.split('/').pop() : undefined;
   }
 
   /**
