@@ -366,7 +366,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
             if(oauth.refresh_token) {
               refreshToken().then(function () {
                 request(obj, deferred); // repeat the process; passing in our promise
-              }, function () {
+              }, function (err) {
                 discardOauth();
                 deferred.reject();
               });

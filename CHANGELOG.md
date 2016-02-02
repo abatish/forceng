@@ -10,3 +10,6 @@
 # 1.1.5
 - added ability to re-init user id
 - added check that id was set before checking it
+
+# 1.1.6
+- added query building support for forceng resource
