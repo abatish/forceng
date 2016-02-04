@@ -36,14 +36,34 @@ module.exports = [
           return this;
         };
 
-        SoqlQueryBuilder.prototype.where = function (condition) {
-          if(_.isArray(condition)) {
-            condition = _.join(condition, ' OR ');
+        function buildCondition(items, joiner) {
+          if(_.isArray(items)) {
+
+            if(items.length === 0) {
+              return null;
+            }
+
+            var query = '';
+
+            _.forEach(items, function (item) {
+              query += buildCondition(item, joiner) + joiner;
+            });
+
+            return '(' + _.trim(query, joiner) + ')';
           }
 
-          condition = ' ( ' + condition + ' ) ';
+          return '(' + items + ')';
+        }
 
-          this.conditions.push(condition);
+        SoqlQueryBuilder.prototype.where = function (condition, joiner) {
+          joiner = joiner || 'OR';
+          joiner = ' ' + joiner + ' ';
+
+          var cond = buildCondition(condition, joiner);
+
+          if(cond) {
+            this.conditions.push(cond);
+          }
 
           return this;
         };
