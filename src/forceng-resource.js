@@ -65,22 +65,20 @@ module.exports = [
         };
 
         SoqlQueryBuilder.prototype.execute = function () {
-          var results = [];
+          var value = [];
 
+          value.$pending = true;
 
-          results.$pending = true;
-
-          results.$promise = force.query(this.buildQuery()).then(function (result) {
-            Array.prototype.push.apply(results, _.map(result.records, function (item) {
+          value.$promise = force.query(this.buildQuery()).then(function (result) {
+            Array.prototype.push.apply(value, _.map(result.records, function (item) {
               return new SfResource(item);
             }));
-
-            return results;
+            return value;
           }).finally(function () {
-            results.$pending = false;
+            value.$pending = false;
           });
 
-          return results;
+          return value;
         };
 
         function SfResource(value) {
@@ -88,18 +86,21 @@ module.exports = [
         };
 
         SfResource.get = function (id) {
-          var result = new SfResource({});
+          var value = new SfResource({});
 
-          result.$pending = true;
+          value.$pending = true;
 
-          result.$promise = force.retrieve(sobjectType, id, null).then(function (res) {
-            shallowClearAndCopy(res, result);
-            return result;
+          value.$promise = force.retrieve(sobjectType, id, null).then(function (res) {
+            var promise = value.$promise;
+            shallowClearAndCopy(res, value);
+            value.$promise = promise;
+            return value;
           }).finally(function () {
-            result.$pending = false;
+            value.$pending = false;
           });
 
-          return result;
+
+          return value;
         };
 
         SfResource.query = function (fields) {
