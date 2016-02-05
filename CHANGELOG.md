@@ -13,3 +13,6 @@
 
 # 1.1.6
 - added query building support for forceng resource
+
+# 1.1.9
+- preserving $promise on get and query when value returend
