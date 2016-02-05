@@ -162,6 +162,8 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
   function init(params) {
     initCalled = true;
 
+    params = params || {};
+
     appId = params.appId || appId;
 
     //ignore the oauthCallbackUrl in Cordova
