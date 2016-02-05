@@ -271,6 +271,12 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
       browserRef.addEventListener("loadstart", function(event) {
         handleOauthRedirect(event.url, browserRef, deferred);
       });
+      browserRef.addEventListener("loaderror", function(event) {
+        handleOauthRedirect(event.url, browserRef, deferred);
+      });
+      browserRef.addEventListener("loadstop", function(event) {
+        handleOauthRedirect(event.url, browserRef, deferred);
+      });
     } else {
       var oauthHandled = false;
 
