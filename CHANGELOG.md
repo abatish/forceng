@@ -16,3 +16,7 @@
 
 # 1.1.9
 - preserving $promise on get and query when value returend
+
+# 1.1.12
+- updated request/requestToken/tokenUpdate flows to emit events,
+  actually clean out token

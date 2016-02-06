@@ -1,7 +1,7 @@
 var angular = require('angular');
 var _ = require('lodash');
 
-module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) {
+module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, $rootScope) {
   // The login URL for the OAuth process
   // To override default, pass loginURL in init(props)
   var loginURL = 'https://login.salesforce.com',
@@ -93,16 +93,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     return parts.join("&");
   }
 
-  function refreshTokenWithPlugin(deferred) {
-    oauthPlugin.authenticate(
-      function (response) {
-        oauth.access_token = response.accessToken;
-        deferred.resolve();
-      },
-      function () {
-        deferred.reject();
-      });
-  }
 
   function refreshTokenWithHTTPRequest(deferred) {
     var params = {
@@ -192,10 +182,12 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
 
   }
 
-  function discardOauth() {
+  function logout() {
     for(var p in oauth) {
-      oauth[p] = null;
+      delete oauth[p];
     }
+
+    $rootScope.$emit('$forceLogout');
   }
 
   /**
@@ -321,6 +313,21 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     return (oauth && oauth.access_token) ? true : false;
   }
 
+  function handleUnauthorizedRequest(requestObj, deferred) {
+    if(oauth.refresh_token) {
+      refreshToken().then(function () {
+        $rootScope.$emit('$forceOauthUpdate');
+        request(requestObj, deferred); // repeat the process; passing in our promise
+      }, function (err) {
+        logout();
+        deferred.reject();
+      });
+    } else {
+      logout();
+      deferred.reject();
+    }
+  }
+
   /**
    * Lets you make any Salesforce REST API request.
    * @param obj - Request configuration object. Can include:
@@ -370,18 +377,9 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
           deferred.resolve(data);
         })
         .error(function (data, status, headers, config) {
+
           if (status === 401) {
-            if(oauth.refresh_token) {
-              refreshToken().then(function () {
-                request(obj, deferred); // repeat the process; passing in our promise
-              }, function (err) {
-                discardOauth();
-                deferred.reject();
-              });
-            } else {
-              discardOauth();
-              deferred.reject();
-            }
+            handleUnauthorizedRequest(obj,  deferred);
           }
           else {
             deferred.reject(data);
@@ -566,7 +564,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval) 
     apexrest: apexrest,
     chatter: chatter,
     oauth: oauth,
-    discardToken: discardToken
+    logout: logout
   };
 
 };
