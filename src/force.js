@@ -485,13 +485,17 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
    * @param data
    * @returns {*}
    */
-  function upsert(objectName, externalIdField, externalId, data) {
+  function upsert(params) {
+    var objectName = params.objectName,
+        id = params.Id,
+        fields = params.fields;
+
 
     return request({
       method: 'PATCH',
       contentType: 'application/json',
-      path: '/services/data/' + apiVersion + '/sobjects/' + objectName + '/' + externalIdField + '/' + externalId,
-      data: data
+      path: '/services/data/' + apiVersion + '/sobjects/' + objectName + (id ? '/' + id : ''),
+      data: fields
     });
 
   }

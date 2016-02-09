@@ -85,6 +85,24 @@ module.exports = [
           shallowClearAndCopy(value || {}, this);
         };
 
+        SfResource.prototype.save = function (updateFields) {
+          var fields = {},
+              obj = this,
+              objCpy = angular.copy(obj);
+
+          _.forEach(updateFields, function(field) {
+            fields[field] = obj[field];
+          });
+
+          return force.upsert({
+            objectName: sobjectType,
+            Id: obj.Id,
+            fields: fields
+          });
+        };
+
+        SfResource
+
         SfResource.get = function (id) {
           var value = new SfResource({});
 
@@ -104,6 +122,10 @@ module.exports = [
         };
 
         SfResource.query = function (fields) {
+          if(_.indexOf(fields, 'Id') < 0) {
+            fields.push('Id');
+          }
+
           var queryBuilder = new SoqlQueryBuilder();
 
           queryBuilder.select(fields);
