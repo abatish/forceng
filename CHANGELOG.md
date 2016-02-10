@@ -20,3 +20,7 @@
 # 1.1.12
 - updated request/requestToken/tokenUpdate flows to emit events,
   actually clean out token
+
+# 1.1.13
+- updated handleOauthRedirect to use lodash's starts with instead of
+  String.startsWith, which isn't always supported.

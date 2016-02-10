@@ -226,7 +226,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
   };
 
   function handleOauthRedirect(url, browserRef, deferred, interval) {
-    if(url && url.startsWith(oauthCallbackURL)) {
+    if(url && _.startsWith(url, oauthCallbackURL)) {
       var oauthResponse = parseQueryString((url).split('#')[1]);
 
       if (typeof oauthResponse === 'undefined' ||
