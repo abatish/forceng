@@ -24,3 +24,7 @@
 # 1.1.14
 - updated handleOauthRedirect to use lodash's starts with instead of
   String.startsWith, which isn't always supported.
+
+# 1.2.0
+- changed way login can be resotred; now user is expected
+  to pass oauth as a param to the init funciton

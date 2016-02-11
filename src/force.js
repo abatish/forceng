@@ -164,20 +164,10 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     proxyURL = params.proxyURL || proxyURL;
     useProxy = params.useProxy === undefined ? useProxy : params.useProxy;
 
-    if (params.access_token) {
-      oauth.access_token = params.access_token;
-    }
-
-    if (params.instance_url) {
-      oauth.instance_url = params.instance_url;
-    }
-
-    if (params.refresh_token) {
-      oauth.refresh_token = params.refresh_token;
-    }
-
-    if (params.id) {
-      oauth.id = params.id;
+    if (params.oauth) {
+      for(var prop in params.oauth) {
+        oauth[prop] = params.oauth[prop];
+      }
     }
 
   }
@@ -535,7 +525,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
    */
   function chatter(params) {
 
-    var base = "/services/data/" + apiVersion + "/chatter";
+    var base = "/services/data/" + apiVersion + (params.path.indexOf('chatter') >= 0 ? '' : '/chatter');
 
     if (!params || !params.path) {
       errorHandler("You must specify a path for the request");
