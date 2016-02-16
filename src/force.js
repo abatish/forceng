@@ -524,19 +524,23 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
    * @param errorHandler
    */
   function chatter(params) {
-
-    var base = "/services/data/" + apiVersion + (params.path.indexOf('chatter') >= 0 ? '' : '/chatter');
-
-    if (!params || !params.path) {
+    if (!params || (!params.path && !params.fullPath)) {
       errorHandler("You must specify a path for the request");
       return;
     }
 
-    if (params.path.charAt(0) !== "/") {
-      params.path = "/" + params.path;
-    }
+    if(params.fullPath) {
+      params.path = params.fullPath;
+    } else {
 
-    params.path = base + params.path;
+      var base = "/services/data/" + apiVersion + (params.path.indexOf('chatter') >= 0 ? '' : '/chatter');
+
+      if (params.path.charAt(0) !== "/") {
+        params.path = "/" + params.path;
+      }
+
+      params.path = base + params.path;
+    }
 
     return request(params);
 

@@ -28,3 +28,7 @@
 # 1.2.0
 - changed way login can be resotred; now user is expected
   to pass oauth as a param to the init funciton
+
+# 1.2.1
+- added ability to pass a fullPath param to chatter to bypass the
+  path appending.
