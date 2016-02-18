@@ -307,6 +307,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     if(oauth.refresh_token) {
       refreshToken().then(function () {
         $rootScope.$emit('$forceOauthUpdate');
+        requestObj.reauthorized = true;
         request(requestObj, deferred); // repeat the process; passing in our promise
       }, function (err) {
         logout();
@@ -316,6 +317,12 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
       logout();
       deferred.reject();
     }
+  }
+
+  function defaultHeaders () {
+    return {
+      'Authorization': 'Bearer ' + oauth.access_token
+    };
   }
 
   /**
@@ -329,9 +336,12 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
   function request(obj, deferred) {
 
     var method = obj.method || 'GET',
-      headers = {},
+      headers = defaultHeaders(),
       url = getRequestBaseURL(),
-      deferred = deferred || $q.defer()
+      deferred = deferred || $q.defer();
+
+
+    obj.settings = obj.settings || {};
 
     if(!initCalled) {
       deferred.reject('you must call init before making any requests');
@@ -348,7 +358,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
 
       url = url + obj.path;
 
-      headers["Authorization"] = "Bearer " + oauth.access_token;
       if (obj.contentType) {
         headers["Content-Type"] = obj.contentType;
       }
@@ -356,19 +365,22 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
         headers["Target-URL"] = oauth.instance_url;
       }
 
-      $http({
+      var opts = _.defaults(obj.settings, {
         headers: headers,
         method: method,
         url: url,
         params: obj.params,
         data: obj.data
-      })
+      });
+
+
+      $http(opts)
         .success(function (data, status, headers, config) {
           deferred.resolve(data);
         })
         .error(function (data, status, headers, config) {
 
-          if (status === 401) {
+          if (status === 401 && !obj.reauthorized) {
             handleUnauthorizedRequest(obj,  deferred);
           }
           else {
@@ -387,7 +399,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
    * @returns {*}
    */
   function query(soql) {
-
     return request({
       path: '/services/data/' + apiVersion + '/query',
       params: {q: soql}

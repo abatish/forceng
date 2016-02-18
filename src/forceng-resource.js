@@ -85,23 +85,43 @@ module.exports = [
           shallowClearAndCopy(value || {}, this);
         };
 
+        SfResource.prototype.delete = function () {
+          if(this.isNew()) {
+            return force.del(sobjectType, this.Id);
+          }
+
+          return $q.reject('cannot delete a new sf object');
+        };
+
+        SfResource.prototype.isNew = function () {
+          return !this.id;
+        };
+
         SfResource.prototype.save = function (updateFields) {
           var fields = {},
               obj = this,
               objCpy = angular.copy(obj);
 
+
+          if(obj.isNew()) {
+            updateFields = _.keys(obj);
+          }
+
           _.forEach(updateFields, function(field) {
             fields[field] = obj[field];
           });
 
-          return force.upsert({
-            objectName: sobjectType,
-            Id: obj.Id,
-            fields: fields
-          });
+          if(!obj.isNew()) {
+            return force.upsert({
+              objectName: sobjectType,
+              Id: obj.Id,
+              fields: fields
+            });
+          } else {
+            return force.create(sobjectType, fields)
+          }
         };
 
-        SfResource
 
         SfResource.get = function (id) {
           var value = new SfResource({});

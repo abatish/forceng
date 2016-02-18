@@ -32,3 +32,6 @@
 # 1.2.1
 - added ability to pass a fullPath param to chatter to bypass the
   path appending.
+
+# 1.2.2
+- added ability to override $http params to request via the "settings" param
