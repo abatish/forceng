@@ -1,7 +1,10 @@
 'use strict';
 
-var app = require('angular').module('forceng', [])
+require('angular-cache');
+
+var app = require('angular').module('forceng', ['angular-cache'])
   .factory('force', require('./force'))
-  .provider('forceResource', require('./forceng-resource'));
+  .provider('forceResource', require('./forceng-resource'))
+  .factory('chatterService', require('./chatterService'));
 
 module.exports = 'forceng';

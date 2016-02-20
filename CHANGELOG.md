@@ -35,3 +35,6 @@
 
 # 1.2.2
 - added ability to override $http params to request via the "settings" param
+
+# 1.2.3
+- added naive way to cache; chatterService

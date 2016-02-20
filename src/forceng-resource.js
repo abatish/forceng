@@ -4,7 +4,7 @@ module.exports = [
   function () {
     var provider = this;
 
-    provider.$get = ['force', function (force) {
+    provider.$get = ['force', '$q', function (force, $q) {
 
       var defaultFields = [ 'Id', 'Name' ];
 
@@ -86,16 +86,32 @@ module.exports = [
         };
 
         SfResource.prototype.delete = function () {
-          if(this.isNew()) {
-            return force.del(sobjectType, this.Id);
+          if(!this.isNew()) {
+            return force.del(sobjectType, this.Id).then(function () {
+              clearObjectCache();
+            });
           }
 
           return $q.reject('cannot delete a new sf object');
         };
 
         SfResource.prototype.isNew = function () {
-          return !this.id;
+          return !this.id && !this.Id;
         };
+
+        function clearObjectCache() {
+          var cache = force.getCache();
+
+          if(cache) {
+            _.forEach(cache.keySet(), function (key) {
+              // naivly assume all entries with the sObjectType are related
+              // and need to be updated
+              if(key.indexOf(sobjectType) >= 0) {
+                cache.remove(key);
+              }
+            })
+          }
+        }
 
         SfResource.prototype.save = function (updateFields) {
           var fields = {},
@@ -112,16 +128,19 @@ module.exports = [
           });
 
           if(!obj.isNew()) {
-            return force.upsert({
+            promise = force.upsert({
               objectName: sobjectType,
               Id: obj.Id,
               fields: fields
             });
           } else {
-            return force.create(sobjectType, fields)
+            promise = force.create(sobjectType, fields);
           }
-        };
 
+          return promise.then(function () {
+            clearObjectCache();
+          });
+        };
 
         SfResource.get = function (id) {
           var value = new SfResource({});

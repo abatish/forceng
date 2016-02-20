@@ -1,7 +1,7 @@
 var angular = require('angular');
 var _ = require('lodash');
 
-module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, $rootScope) {
+module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, $rootScope, CacheFactory) {
   // The login URL for the OAuth process
   // To override default, pass loginURL in init(props)
   var loginURL = 'https://login.salesforce.com',
@@ -11,6 +11,9 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
 
   // The Connected App client Id.
     appId,
+
+  // the cache instance, if any
+    cache = null,
 
   // The force.com API version to use.
   // To override default, pass apiVersion in init(props)
@@ -163,6 +166,15 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     loginURL = params.loginURL || loginURL;
     proxyURL = params.proxyURL || proxyURL;
     useProxy = params.useProxy === undefined ? useProxy : params.useProxy;
+
+    if(params.caching) {
+      if (!CacheFactory.get('forceNgCache')) {
+        cache = CacheFactory('forceNgCache', {
+          maxAge: 60000,
+          storageMode: 'localStorage'
+        });
+      }
+    }
 
     if (params.oauth) {
       for(var prop in params.oauth) {
@@ -370,7 +382,8 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
         method: method,
         url: url,
         params: obj.params,
-        data: obj.data
+        data: angular.copy(obj.data),
+        cache: cache
       });
 
 
@@ -557,6 +570,10 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
 
   }
 
+  function getCache() {
+    return cache;
+  }
+
   // The public API
   return {
     init: init,
@@ -573,7 +590,8 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     apexrest: apexrest,
     chatter: chatter,
     oauth: oauth,
-    logout: logout
+    logout: logout,
+    getCache: getCache
   };
 
 };
