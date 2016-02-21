@@ -6,12 +6,7 @@ module.exports = [
   function ( force, $q, CacheFactory ) {
 
     var communityId = null;
-
-    var profileCache = CacheFactory('chatterProfileCache', {
-      maxAge: 600000,
-      storageMode: 'localStorage'
-    });
-
+    var profileCache = null;
 
     function setCommunityId(newCommunityId) {
       communityId = newCommunityId;
@@ -27,7 +22,7 @@ module.exports = [
 
     function getUserProfile(userId) {
       var path = baseChatterUrl() + '/users/' + userId;
-      return force.chatter({ path: path, settings: { cache: profileCache }});
+      return force.chatter({ path: path });
     }
 
     function getAvatarUrl(params) {
@@ -100,7 +95,6 @@ module.exports = [
       likePost: likePost,
       createPost: createPost,
       deletePost: deletePost,
-      likePost: likePost,
       unlikePost: unlikePost,
       getAvatarUrl: getAvatarUrl,
       resetRecordFeedCache: resetRecordFeedCache,
