@@ -23,7 +23,7 @@ module.exports = [
 
     function baseChatterUrl() {
       return (communityId ? ('/connect/communities/' + communityId) : '') + '/chatter';
-    };
+    }
 
     function getUserProfile(userId) {
       var path = baseChatterUrl() + '/users/' + userId;
@@ -53,13 +53,13 @@ module.exports = [
       if(cache) {
         var items = _.filter(cache.keySet(), function (key) {
           return key.indexOf(recordFeedUrl(recordId)) >= 0
-        })
+        });
 
         _.forEach(items, function (item) {
           cache.remove(item);
         });
       }
-    };
+    }
 
     function deletePost(post) {
       var path = baseChatterUrl() + '/feed-elements/' + post.id;
@@ -79,7 +79,7 @@ module.exports = [
         },
         feedElementType : "FeedItem",
         subjectId : params.subjectId
-      };
+      }
 
       return force.chatter({ path: path, data: data, method: 'POST' });
     }
