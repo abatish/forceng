@@ -171,6 +171,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
       if (!CacheFactory.get('forceNgCache')) {
         cache = CacheFactory('forceNgCache', {
           maxAge: 60000,
+          deleteOnExpire: 'aggressive',
           storageMode: 'localStorage'
         });
       }
