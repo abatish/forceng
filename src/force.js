@@ -320,7 +320,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     if(oauth.refresh_token) {
       refreshToken().then(function () {
         $rootScope.$emit('$forceOauthUpdate');
-        requestObj.reauthorized = true;
         request(requestObj, deferred); // repeat the process; passing in our promise
       }, function (err) {
         logout();
@@ -394,7 +393,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
         })
         .error(function (data, status, headers, config) {
 
-          if (status === 401 && !obj.reauthorized) {
+          if (status === 401) {
             handleUnauthorizedRequest(obj,  deferred);
           }
           else {
