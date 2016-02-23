@@ -39,5 +39,5 @@
 # 1.2.3
 - added naive way to cache; chatterService
 
-# 1.2.4
+# 1.2.7
 - no longer caching failed requsts.
