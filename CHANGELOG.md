@@ -41,3 +41,6 @@
 
 # 1.2.7
 - no longer caching failed requsts.
+
+# 1.2.8
+- logging

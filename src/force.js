@@ -1,7 +1,9 @@
 var angular = require('angular');
 var _ = require('lodash');
+var uuid = require('node-uuid');
+var sprintf = require('sprintf-js').sprintf;
 
-module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, $rootScope, CacheFactory) {
+module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, $rootScope, CacheFactory, $log) {
   // The login URL for the OAuth process
   // To override default, pass loginURL in init(props)
   var loginURL = 'https://login.salesforce.com',
@@ -42,6 +44,8 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
 
   // Reference to the Salesforce OAuth plugin
     oauthPlugin,
+
+    logger = $log;
 
   // Whether or not to use a CORS proxy. Defaults to false if app running in Cordova or in a VF page
   // Can be overriden in init()
@@ -125,12 +129,11 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
       url: url,
       params: params
     })
-      .success(function (data, status, headers, config) {
-        oauth.access_token = data.access_token;
+      .then(function (resp) {
+        oauth.access_token = resp.data.access_token;
         deferred.resolve();
-      })
-      .error(function (data, status, headers, config) {
-        deferred.reject();
+      }, function (data, status, headers, config) {
+        deferred.reject(data);
       });
   }
 
@@ -319,9 +322,23 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
   function handleUnauthorizedRequest(requestObj, deferred) {
     if(oauth.refresh_token) {
       refreshToken().then(function () {
+
+
+        logger.debug({
+          userId: getUserId(),
+          msg: 'Refreshed access token'
+        });
+
         $rootScope.$emit('$forceOauthUpdate');
         request(requestObj, deferred); // repeat the process; passing in our promise
       }, function (err) {
+
+        logger.debug({
+          userId: getUserId(),
+          msg: 'Failed to refresh token',
+          resp: err.data
+        })
+
         logout();
         deferred.reject();
       });
@@ -336,6 +353,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
       'Authorization': 'Bearer ' + oauth.access_token
     };
   }
+
 
   /**
    * Lets you make any Salesforce REST API request.
@@ -383,22 +401,47 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
         url: url,
         params: obj.params,
         data: angular.copy(obj.data),
-        cache: cache
+        cache: getCache()
       });
 
+      var reqId = uuid.v4();
+
+      logger.debug({
+        uuid: reqId,
+        userId: getUserId(),
+        endpoint: url,
+        params: obj.params,
+        data: opts.data
+      });
 
       $http(opts)
-        .success(function (data, status, headers, config) {
-          deferred.resolve(data);
-        })
-        .error(function (data, status, headers, config) {
-          cache.remove(url); // don't cache failed requests
+        .then(function (resp) {
 
-          if (status === 401) {
-            handleUnauthorizedRequest(obj,  deferred);
+          logger.debug({
+            uuid: reqId,
+            result: 'success'
+          });
+
+          deferred.resolve(resp.data);
+        }, function (resp) {
+
+          logger.debug({
+            uuid: reqId,
+            result: 'failed',
+            response: resp.data,
+            status: resp.status
+          });
+
+          if(getCache()) {
+            getCache().remove(url); // don't cache failed requests
+          }
+
+          if (resp.status === 401) {
+            delete obj.settings.headers;
+            handleUnauthorizedRequest(obj, deferred);
           }
           else {
-            deferred.reject(data);
+            deferred.reject(resp.data);
           }
         });
     }
