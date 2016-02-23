@@ -392,6 +392,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
           deferred.resolve(data);
         })
         .error(function (data, status, headers, config) {
+          cache.remove(url); // don't cache failed requests
 
           if (status === 401) {
             handleUnauthorizedRequest(obj,  deferred);
@@ -399,7 +400,6 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
           else {
             deferred.reject(data);
           }
-
         });
     }
 
