@@ -13,7 +13,7 @@ module.exports = [
     }
 
     function recordFeedUrl(recordId) {
-        return baseChatterUrl() + '/feeds/people/me/feed-elements';
+      return baseChatterUrl() + '/feeds/news/me/feed-elements';
     }
 
     function baseChatterUrl() {
@@ -27,9 +27,9 @@ module.exports = [
 
     function getAvatarUrl(params) {
       return getUserProfile(params.userId)
-        .then(function (profile) {
-          return profile.photo[params.photoField || 'largePhotoUrl'] + '?oauth_token=' + force.oauth.access_token;
-        });
+          .then(function (profile) {
+            return profile.photo[params.photoField || 'largePhotoUrl'] + '?oauth_token=' + force.oauth.access_token;
+          });
     }
 
     function getPostsForRecord(params) {
