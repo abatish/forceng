@@ -13,7 +13,7 @@ module.exports = [
     }
 
     function recordFeedUrl(recordId) {
-      return baseChatterUrl() + '/feeds/record/' + recordId + '/feed-elements';
+      return baseChatterUrl() + '/feeds/news/me/feed-elements';
     }
 
     function baseChatterUrl() {
