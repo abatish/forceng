@@ -28,7 +28,9 @@ module.exports = [
     function getAvatarUrl(params) {
       return getUserProfile(params.userId)
         .then(function (profile) {
-          return profile.photo[params.photoField || 'largePhotoUrl'] + '?oauth_token=' + force.oauth.access_token;
+          var url = profile.photo[params.photoField || 'largePhotoUrl'];
+          var query = params.passToken === false ? '' : '?oauth_token=' + force.oauth.access_token;
+          return url + query;
         });
     }
 
