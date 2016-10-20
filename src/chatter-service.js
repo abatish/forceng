@@ -6,13 +6,12 @@ module.exports = [
   function ( force, $q, CacheFactory ) {
 
     var communityId = null;
-    var profileCache = null;
 
     function setCommunityId(newCommunityId) {
       communityId = newCommunityId;
     }
 
-    function recordFeedUrl(recordId) {
+    function recordFeedUrl() {
       return baseChatterUrl() + '/feeds/news/me/feed-elements';
     }
 
@@ -28,7 +27,9 @@ module.exports = [
     function getAvatarUrl(params) {
       return getUserProfile(params.userId)
         .then(function (profile) {
-          return profile.photo[params.photoField || 'largePhotoUrl'] + '?oauth_token=' + force.oauth.access_token;
+          var url = profile.photo[params.photoField || 'largePhotoUrl'];
+          var query = params.passToken === false ? '' : '?oauth_token=' + force.oauth.access_token;
+          return url + query;
         });
     }
 
@@ -43,17 +44,7 @@ module.exports = [
     }
 
     function resetRecordFeedCache(recordId) {
-      var cache = force.getCache();
-
-      if(cache) {
-        var items = _.filter(cache.keySet(), function (key) {
-          return key.indexOf(recordFeedUrl(recordId)) >= 0
-        });
-
-        _.forEach(items, function (item) {
-          cache.remove(item);
-        });
-      }
+      force.removeFromCacheByRegex(recordFeedUrl(recordId));
     }
 
     function deletePost(post) {
@@ -74,7 +65,7 @@ module.exports = [
         },
         feedElementType : "FeedItem",
         subjectId : params.subjectId
-      }
+      };
 
       return force.chatter({ path: path, data: data, method: 'POST' });
     }
@@ -90,7 +81,7 @@ module.exports = [
             }
           ]
         }
-      }
+      };
 
       return force.chatter({ path: path, data: data, method: 'POST' });
     }
@@ -99,6 +90,11 @@ module.exports = [
       var path = baseChatterUrl() + '/feed-elements/' + post.id + '/capabilities/comments/items';
 
       return force.chatter({ path: path });
+    }
+
+    function resetCommentsCache(post) {
+      var path = baseChatterUrl() + '/feed-elements/' + post.id + '/capabilities/comments/items';
+      force.removeFromCacheByRegex(path);
     }
 
     function deleteComment(comment) {
@@ -127,8 +123,9 @@ module.exports = [
       retrieveComments: retrieveComments,
       createComment: createComment,
       deleteComment: deleteComment,
+      resetCommentsCache: resetCommentsCache,
       resetRecordFeedCache: resetRecordFeedCache,
       setCommunityId: setCommunityId
     }
   }
-]
+];
