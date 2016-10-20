@@ -44,3 +44,8 @@
 
 # 1.2.8
 - logging
+
+# 1.3.3
+- Added passToken parameter to chatterService.getAcatarUrl to optionally
+  not pass the oauth_token param.
+- Added chatterService.resetCommentsCache() method
