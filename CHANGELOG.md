@@ -49,3 +49,8 @@
 - Added passToken parameter to chatterService.getAcatarUrl to optionally
   not pass the oauth_token param.
 - Added chatterService.resetCommentsCache() method
+
+# 1.3.4
+- Added chatterService.getMentionCompletions() method
+- Added ability to pass messageSegments to createPost/createComment to allow
+  saving at mentions

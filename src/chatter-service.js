@@ -58,14 +58,22 @@ module.exports = [
       var path = baseChatterUrl() + '/feed-elements';
 
       var data = {
-        body: {
-          messageSegments: [
-            { text: params.message, type: "Text" }
-          ]
-        },
         feedElementType : "FeedItem",
         subjectId : params.subjectId
       };
+
+      if(params.messageSegments) {
+        data.body = {
+          messageSegments: params.messageSegments
+        }
+      }
+      else if(params.message) {
+        data.body = {
+          messageSegments: [
+            { text: params.message, type: "Text" }
+          ]
+        };
+      }
 
       return force.chatter({ path: path, data: data, method: 'POST' });
     }
@@ -73,15 +81,20 @@ module.exports = [
     function createComment(params){
       var path = baseChatterUrl() + '/feed-elements/' + params.postId + '/capabilities/comments/items';
 
-      var data = {
-        body: {
-          messageSegments: [
-            { text: params.message,
-              type: "Text"
-            }
-          ]
+      var data = {};
+
+      if(params.messageSegments) {
+        data.body = {
+          messageSegments: params.messageSegments
         }
-      };
+      }
+      else if(params.message) {
+        data.body = {
+          messageSegments: [
+            { text: params.message, type: "Text" }
+          ]
+        };
+      }
 
       return force.chatter({ path: path, data: data, method: 'POST' });
     }
@@ -112,6 +125,16 @@ module.exports = [
       return force.chatter({ path: path, method: 'DELETE'})
     }
 
+    function getMentionCompletions(params) {
+      var path = baseChatterUrl() + '/mentions/completions?q=' + params.q
+        + (params.contextId ? '&contextId=' + params.contextId : '')
+        + (params.page ? '&page=' + params.page : '')
+        + (params.pageSize ? '&pageSize=' + params.pageSize : '')
+        + (params.type ? '&type=' + params.type : '');
+
+      return force.chatter({ path: path});
+    }
+
     return {
       getUserProfile: getUserProfile,
       getPostsForRecord: getPostsForRecord,
@@ -125,7 +148,8 @@ module.exports = [
       deleteComment: deleteComment,
       resetCommentsCache: resetCommentsCache,
       resetRecordFeedCache: resetRecordFeedCache,
-      setCommunityId: setCommunityId
+      setCommunityId: setCommunityId,
+      getMentionCompletions: getMentionCompletions
     }
   }
 ];
