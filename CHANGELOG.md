@@ -54,3 +54,6 @@
 - Added chatterService.getMentionCompletions() method
 - Added ability to pass messageSegments to createPost/createComment to allow
   saving at mentions
+
+# 1.3.5
+- Added groupBy support to forceng-resource 
