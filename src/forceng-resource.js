@@ -28,6 +28,7 @@ module.exports = [
           this.fields = [];
           this.conditions = [];
           this.groupByFields = [];
+          this.limitCount = null;
         };
 
         SoqlQueryBuilder.prototype.select = function (fields) {
@@ -62,8 +63,9 @@ module.exports = [
           throw 'SoqlQueryBuilder orderBy not implemented';
         };
 
-        SoqlQueryBuilder.prototype.limit = function () {
-          throw 'SoqlQueryBuilder limit not implemented';
+        SoqlQueryBuilder.prototype.limit = function (limit) {
+          this.limitCount = limit;
+          return this;
         };
 
         SoqlQueryBuilder.prototype.buildQuery = function () {
@@ -74,6 +76,10 @@ module.exports = [
 
           if(this.groupByFields.length > 0) {
             query += ' GROUP BY ' + _.join(this.groupByFields, ',');
+          }
+
+          if(this.limitCount) {
+            query += ' LIMIT ' + this.limitCount;
           }
 
           return query;
@@ -98,7 +104,7 @@ module.exports = [
 
         function SfResource(value) {
           shallowClearAndCopy(value || {}, this);
-        };
+        }
 
         SfResource.prototype.delete = function () {
           if(!this.isNew()) {

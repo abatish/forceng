@@ -57,3 +57,6 @@
 
 # 1.3.5
 - Added groupBy support to forceng-resource 
+
+# 1.3.6
+- Added limit support to forceng-resource
