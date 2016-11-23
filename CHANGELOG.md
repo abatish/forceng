@@ -44,3 +44,6 @@
 
 # 1.2.8
 - logging
+
+# 1.3.7
+- Add methods for describe endpoint

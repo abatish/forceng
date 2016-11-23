@@ -172,6 +172,10 @@ module.exports = [
           return queryBuilder;
         };
 
+        SfResource.describe = function() {
+          return force.describe(sobjectType);
+        };
+
         return SfResource;
       }
 
