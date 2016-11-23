@@ -630,6 +630,19 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     return cache;
   }
 
+  function removeFromCacheByRegex(regex) {
+    var cache = getCache();
+    if(cache) {
+      var keys = _.filter(cache.keySet(), function (key) {
+        return key.match(regex);
+      });
+
+      _.forEach(keys, function(key) {
+        cache.remove(key);
+      });
+    }
+  }
+
   // The public API
   return {
     init: init,
@@ -648,7 +661,8 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     chatter: chatter,
     oauth: oauth,
     logout: logout,
-    getCache: getCache
+    getCache: getCache,
+    removeFromCacheByRegex: removeFromCacheByRegex
   };
 
 };

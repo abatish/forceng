@@ -6,8 +6,6 @@ module.exports = [
 
     provider.$get = ['force', '$q', function (force, $q) {
 
-      var defaultFields = [ 'Id', 'Name' ];
-
       function shallowClearAndCopy(src, dst) {
         dst = dst || {};
 
@@ -29,6 +27,8 @@ module.exports = [
         var SoqlQueryBuilder = function () {
           this.fields = [];
           this.conditions = [];
+          this.groupByFields = [];
+          this.limitCount = null;
         };
 
         SoqlQueryBuilder.prototype.select = function (fields) {
@@ -48,12 +48,24 @@ module.exports = [
           return this;
         };
 
+        SoqlQueryBuilder.prototype.groupBy = function (fields) {
+          this.groupByFields = _.isArray(fields) ? fields : [fields];
+
+          var idIndex = _.indexOf(this.fields, 'Id');
+          if(idIndex > -1) {
+            this.fields.splice(idIndex, 1);
+          }
+
+          return this;
+        };
+
         SoqlQueryBuilder.prototype.orderBy = function () {
           throw 'SoqlQueryBuilder orderBy not implemented';
         };
 
-        SoqlQueryBuilder.prototype.limit = function () {
-          throw 'SoqlQueryBuilder limit not implemented';
+        SoqlQueryBuilder.prototype.limit = function (limit) {
+          this.limitCount = limit;
+          return this;
         };
 
         SoqlQueryBuilder.prototype.buildQuery = function () {
@@ -61,6 +73,15 @@ module.exports = [
           query += _.join(this.fields, ',');
           query += ' FROM ' + sobjectType;
           query += ' WHERE ' + _.join(this.conditions, ' AND ');
+
+          if(this.groupByFields.length > 0) {
+            query += ' GROUP BY ' + _.join(this.groupByFields, ',');
+          }
+
+          if(this.limitCount) {
+            query += ' LIMIT ' + this.limitCount;
+          }
+
           return query;
         };
 
@@ -83,7 +104,7 @@ module.exports = [
 
         function SfResource(value) {
           shallowClearAndCopy(value || {}, this);
-        };
+        }
 
         SfResource.prototype.delete = function () {
           if(!this.isNew()) {

@@ -45,5 +45,21 @@
 # 1.2.8
 - logging
 
+# 1.3.3
+- Added passToken parameter to chatterService.getAcatarUrl to optionally
+  not pass the oauth_token param.
+- Added chatterService.resetCommentsCache() method
+
+# 1.3.4
+- Added chatterService.getMentionCompletions() method
+- Added ability to pass messageSegments to createPost/createComment to allow
+  saving at mentions
+
+# 1.3.5
+- Added groupBy support to forceng-resource 
+
+# 1.3.6
+- Added limit support to forceng-resource
+
 # 1.3.7
 - Add methods for describe endpoint
