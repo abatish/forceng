@@ -613,6 +613,19 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
 
   }
 
+  /**
+   * Retrieve metadata for an object
+   * @param objectName
+   * @returns {*}
+   */
+  function describe(objectName) {
+
+    return request({
+      path: '/services/data/' + apiVersion + '/sobjects/' + objectName + '/describe'
+    });
+
+  }
+
   function getCache() {
     return cache;
   }
@@ -644,6 +657,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     upsert: upsert,
     retrieve: retrieve,
     apexrest: apexrest,
+    describe: describe,
     chatter: chatter,
     oauth: oauth,
     logout: logout,

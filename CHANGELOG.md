@@ -60,3 +60,6 @@
 
 # 1.3.6
 - Added limit support to forceng-resource
+
+# 1.3.7
+- Add methods for describe endpoint
