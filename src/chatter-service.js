@@ -11,8 +11,8 @@ module.exports = [
       communityId = newCommunityId;
     }
 
-    function recordFeedUrl() {
-      return baseChatterUrl() + '/feeds/news/me/feed-elements';
+    function recordFeedUrl(recordId) {
+      return baseChatterUrl() + '/feeds/record/' + recordId + '/feed-elements';
     }
 
     function baseChatterUrl() {
