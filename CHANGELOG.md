@@ -56,10 +56,13 @@
   saving at mentions
 
 # 1.3.5
-- Added groupBy support to forceng-resource 
+- Added groupBy support to forceng-resource
 
 # 1.3.6
 - Added limit support to forceng-resource
 
 # 1.3.7
 - Add methods for describe endpoint
+
+# 1.3.8
+- Fix chatterService.recordFeedUrl() to user given record ID
