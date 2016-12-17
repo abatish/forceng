@@ -59,8 +59,10 @@ module.exports = [
           return this;
         };
 
-        SoqlQueryBuilder.prototype.orderBy = function () {
-          throw 'SoqlQueryBuilder orderBy not implemented';
+        SoqlQueryBuilder.prototype.orderBy = function (field, direction) {
+          this.orderByField = field;
+					this.orderByDirection = direction ? direction : 'ASC';
+					return this;
         };
 
         SoqlQueryBuilder.prototype.limit = function (limit) {
@@ -72,7 +74,14 @@ module.exports = [
           var query = 'SELECT ';
           query += _.join(this.fields, ',');
           query += ' FROM ' + sobjectType;
-          query += ' WHERE ' + _.join(this.conditions, ' AND ');
+
+					if(this.conditions && this.conditions.length > 0) {
+						query += ' WHERE ' + _.join(this.conditions, ' AND ');
+					}
+
+					if(this.orderByField) {
+						query += ' ORDER BY ' + this.orderByField + ' ' + this.orderByDirection;
+					}
 
           if(this.groupByFields.length > 0) {
             query += ' GROUP BY ' + _.join(this.groupByFields, ',');
@@ -158,8 +167,9 @@ module.exports = [
             promise = force.create(sobjectType, fields);
           }
 
-          return promise.then(function () {
+          return promise.then(function (resp) {
             clearObjectCache();
+						return resp;
           });
         };
 
