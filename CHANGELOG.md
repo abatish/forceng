@@ -66,3 +66,7 @@
 
 # 1.3.8
 - Fix chatterService.recordFeedUrl() to user given record ID
+
+# 1.3.9
+- Add orderBy support to forceng-resource
+- Make where method optional on forceng-resource
