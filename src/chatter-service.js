@@ -136,22 +136,22 @@ module.exports = [
     }
 
     function uploadUserPhoto(userId, file) {
-			var formData = new FormData();
-			formData.append('fileUpload', file);
+      var formData = new FormData();
+      formData.append('fileUpload', file);
 
-			return force.chatter({
-				path: baseChatterUrl() + '/users/' + userId + '/photo',
-				method: 'POST',
-				data: formData,
-				contentType: undefined,
-				settings: {
-					transformRequest: angular.identity
-				}
-			}).then(function(resp) {
-				force.removeFromCacheByRegex(baseChatterUrl() + '/users/' + userId);
-				return resp;
-			});
-		}
+      return force.chatter({
+        path: baseChatterUrl() + '/users/' + userId + '/photo',
+        method: 'POST',
+        data: formData,
+        contentType: undefined,
+        settings: {
+          transformRequest: angular.identity
+        }
+      }).then(function(resp) {
+        force.removeFromCacheByRegex(baseChatterUrl() + '/users/' + userId);
+        return resp;
+      });
+    }
 
     return {
       getUserProfile: getUserProfile,
