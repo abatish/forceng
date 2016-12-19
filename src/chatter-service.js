@@ -168,7 +168,7 @@ module.exports = [
       resetRecordFeedCache: resetRecordFeedCache,
       setCommunityId: setCommunityId,
       getMentionCompletions: getMentionCompletions,
-			uploadUserPhoto: uploadUserPhoto
+      uploadUserPhoto: uploadUserPhoto
     }
   }
 ];
