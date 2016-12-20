@@ -388,7 +388,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
 
       url = url + obj.path;
 
-      if (obj.contentType) {
+      if (obj.hasOwnProperty('contentType')) {
         headers["Content-Type"] = obj.contentType;
       }
       if (useProxy) {
@@ -400,7 +400,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
         method: method,
         url: url,
         params: obj.params,
-        data: angular.copy(obj.data),
+        data: obj.data,
         cache: getCache()
       });
 

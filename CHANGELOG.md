@@ -70,3 +70,6 @@
 # 1.3.9
 - Add orderBy support to forceng-resource
 - Make where method optional on forceng-resource
+
+# 1.3.10
+- Add chatterService.uploadUserPhoto() method
