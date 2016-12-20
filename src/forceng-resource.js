@@ -129,25 +129,15 @@ module.exports = [
           return !this.id && !this.Id;
         };
 
-        function clearObjectCache() {
-          var cache = force.getCache();
-
-          if(cache) {
-            _.forEach(cache.keySet(), function (key) {
-              // naivly assume all entries with the sObjectType are related
-              // and need to be updated
-              if(key.indexOf(sobjectType) >= 0) {
-                cache.remove(key);
-              }
-            })
-          }
+        function clearObjectCache(regex) {
+					regex = regex ? sobjectType + '.*' + regex : sobjectType;
+					force.removeFromCacheByRegex(regex);
         }
 
         SfResource.prototype.save = function (updateFields) {
           var fields = {},
               obj = this,
               objCpy = angular.copy(obj);
-
 
           if(obj.isNew()) {
             updateFields = _.keys(obj);
@@ -206,6 +196,10 @@ module.exports = [
         SfResource.describe = function() {
           return force.describe(sobjectType);
         };
+
+        SfResource.clearCache = function(regex) {
+        	clearObjectCache(regex);
+				};
 
         return SfResource;
       }
