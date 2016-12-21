@@ -73,3 +73,6 @@
 
 # 1.3.10
 - Add chatterService.uploadUserPhoto() method
+
+# 1.3.11
+- Add clearCache() method to SfResource to clear cache with optional regex
