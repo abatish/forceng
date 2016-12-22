@@ -125,6 +125,16 @@ module.exports = [
       return force.chatter({ path: path, method: 'DELETE'})
     }
 
+    function flagPost(post, options) {
+      var path = baseChatterUrl() + '/feed-elements/' + post.id + '/capabilities/moderation';
+      return force.chatter({ path: path, method: 'POST', data: options });
+    }
+
+    function unflagPost(post) {
+      var path = baseChatterUrl() + '/feed-elements/' + post.id + '/capabilities/moderation';
+      return force.chatter({ path: path, method: 'DELETE' });
+    }
+
     function getMentionCompletions(params) {
       var path = baseChatterUrl() + '/mentions/completions?q=' + params.q
         + (params.contextId ? '&contextId=' + params.contextId : '')
@@ -156,10 +166,12 @@ module.exports = [
     return {
       getUserProfile: getUserProfile,
       getPostsForRecord: getPostsForRecord,
-      likePost: likePost,
       createPost: createPost,
       deletePost: deletePost,
+      likePost: likePost,
       unlikePost: unlikePost,
+      flagPost: flagPost,
+      unflagPost: unflagPost,
       getAvatarUrl: getAvatarUrl,
       retrieveComments: retrieveComments,
       createComment: createComment,
