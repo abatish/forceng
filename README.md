@@ -309,7 +309,7 @@ Parameters:
 
     The version of the Salesforce API.
 
-    *Default*: v33.0
+    *Default*: v38.0
 
 
 Use the following init parameters, if you don't need to authenticate the user because you already have an authenticated token. For example, if you are running the app from a Visualforce page. **accessToken** is the only required parameter in that scenario.
@@ -337,7 +337,7 @@ Example:
 ```
 force.init({
     appId: '3MVG9fMtCkV6eLheIEZplMqWfnGlf3Y.BcWdOf1qytXo9zxgbsrUbS.ExHTgUPJeb3jZeT8NYhc.hMyznKU92',
-    apiVersion: 'v33.0',
+    apiVersion: 'v38.0',
     loginURL: 'https://login.salesforce.com',
     oauthRedirectURL: 'http://localhost:8200/oauthcallback.html',
     proxyURL: 'http://localhost:8200'

@@ -76,3 +76,9 @@
 
 # 1.3.11
 - Add clearCache() method to SfResource to clear cache with optional regex
+
+# 1.3.12
+- Add chatterService.flagPost() and chatterService.unflagPost()
+
+# 1.3.13
+- Bump default api version to 38.0

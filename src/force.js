@@ -19,7 +19,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
 
   // The force.com API version to use.
   // To override default, pass apiVersion in init(props)
-    apiVersion = 'v33.0',
+    apiVersion = 'v38.0',
 
   // Keep track of OAuth data (access_token, refresh_token, and instance_url)
     oauth = {},
