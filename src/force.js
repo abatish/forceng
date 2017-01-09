@@ -78,6 +78,10 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     return url;
   }
 
+  function getVersionPath() {
+    return '/services/data/' + apiVersion;
+  }
+
   function parseQueryString(queryString) {
     var qs = decodeURIComponent(queryString),
       obj = {},
@@ -646,6 +650,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
   // The public API
   return {
     init: init,
+    getVersionPath: getVersionPath,
     login: login,
     getUserId: getUserId,
     isAuthenticated: isAuthenticated,
