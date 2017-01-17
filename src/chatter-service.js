@@ -150,7 +150,7 @@ module.exports = [
       formData.append('fileUpload', file);
 
       return force.chatter({
-        path: baseChatterUrl() + '/users/' + userId + '/photo',
+        fullPath: force.getVersionPath() + '/connect/communities/' + communityId + '/user-profiles/' + userId + '/photo',
         method: 'POST',
         data: formData,
         contentType: undefined,
