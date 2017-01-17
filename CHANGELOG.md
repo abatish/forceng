@@ -82,3 +82,6 @@
 
 # 1.3.13
 - Bump default api version to 38.0
+
+# 1.3.14
+- Add force.processApproval() method

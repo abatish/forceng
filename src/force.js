@@ -626,6 +626,17 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
 
   }
 
+  function processApproval(params) {
+    return request({
+      method: 'POST',
+      contentType: 'application/json',
+      path: '/services/data/' + apiVersion + '/process/approvals',
+      data: {
+        requests: [params]
+      }
+    });
+  }
+
   function getCache() {
     return cache;
   }
@@ -662,7 +673,8 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     oauth: oauth,
     logout: logout,
     getCache: getCache,
-    removeFromCacheByRegex: removeFromCacheByRegex
+    removeFromCacheByRegex: removeFromCacheByRegex,
+    processApproval: processApproval
   };
 
 };
