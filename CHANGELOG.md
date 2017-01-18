@@ -85,3 +85,6 @@
 
 # 1.3.14
 - Fix user photo upload request for API version 35.0+
+
+# 1.3.15
+- Add force.processApproval() method
