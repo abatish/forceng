@@ -125,6 +125,16 @@ module.exports = [
       return force.chatter({ path: path, method: 'DELETE'})
     }
 
+    function retrieveLikes(post) {
+      var path = baseChatterUrl() + '/feed-elements/' + post.id + '/capabilities/chatter-likes';
+      return force.chatter({ path: path, method: 'GET'})
+    }
+
+    function resetLikesCache(post) {
+      var path = baseChatterUrl() + '/feed-elements/' + post.id + '/capabilities/chatter-likes';
+      force.removeFromCacheByRegex(path);
+    }
+
     function flagPost(post, options) {
       var path = baseChatterUrl() + '/feed-elements/' + post.id + '/capabilities/moderation';
       return force.chatter({ path: path, method: 'POST', data: options });
@@ -170,6 +180,7 @@ module.exports = [
       deletePost: deletePost,
       likePost: likePost,
       unlikePost: unlikePost,
+      retrieveLikes: retrieveLikes,
       flagPost: flagPost,
       unflagPost: unflagPost,
       getAvatarUrl: getAvatarUrl,
@@ -178,6 +189,7 @@ module.exports = [
       deleteComment: deleteComment,
       resetCommentsCache: resetCommentsCache,
       resetRecordFeedCache: resetRecordFeedCache,
+      resetLikesCache: resetLikesCache,
       setCommunityId: setCommunityId,
       getMentionCompletions: getMentionCompletions,
       uploadUserPhoto: uploadUserPhoto
