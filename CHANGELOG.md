@@ -87,4 +87,7 @@
 - Fix user photo upload request for API version 35.0+
 
 # 1.3.15
+- Add force.processApproval() method
+
+# 1.3.16
 - Add chatterService.retriveLikes() and resetLikesCache() methods
