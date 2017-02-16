@@ -267,7 +267,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
       return deferred.reject('cordova-plugin-inappbrowser is required to run forceNg');
     }
 
-    var browserRef = $window.open(getAuthorizeUrl(), "_blank", "location=no,clearsessioncache=yes,clearcache=yes");
+    var browserRef = $window.open(getAuthorizeUrl(), "_blank", "location=no,clearsessioncache=yes,clearcache=yes,toolbar=no");
 
     if(isCordova()) {
       browserRef.addEventListener("loadstart", function(event) {
