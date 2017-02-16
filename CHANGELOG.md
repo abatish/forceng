@@ -91,3 +91,6 @@
 
 # 1.3.16
 - Add chatterService.retriveLikes() and resetLikesCache() methods
+
+# 1.3.17
+- Remove toolbar from oauth popup on iOS
