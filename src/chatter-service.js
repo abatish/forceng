@@ -24,6 +24,10 @@ module.exports = [
       return force.chatter({ path: path });
     }
 
+    function resetUserProfileCache(userId) {
+      force.removeFromCacheByRegex(baseChatterUrl() + '/users/' + userId);
+    }
+
     function getAvatarUrl(params) {
       return getUserProfile(params.userId)
         .then(function (profile) {
@@ -190,6 +194,7 @@ module.exports = [
       resetCommentsCache: resetCommentsCache,
       resetRecordFeedCache: resetRecordFeedCache,
       resetLikesCache: resetLikesCache,
+      resetUserProfileCache: resetUserProfileCache,
       setCommunityId: setCommunityId,
       getMentionCompletions: getMentionCompletions,
       uploadUserPhoto: uploadUserPhoto
