@@ -94,3 +94,9 @@
 
 # 1.3.17
 - Remove toolbar from oauth popup on iOS
+
+# 1.3.18
+- Add chatterService.resetUserProfileCache() method
+
+# 1.3.19
+- Add cache busting to all requests
