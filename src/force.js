@@ -147,6 +147,30 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     return deferred.promise;
   }
 
+  function initCache() {
+    var cache = CacheFactory('forceNgCache', {
+      maxAge: 60000,
+      deleteOnExpire: 'aggressive',
+      storageMode: 'localStorage'
+    });
+
+    function transformKey(key) {
+      return key.replace(/[?&]cb=[0-9]*/, '');
+    }
+
+    var originaPut = cache.put;
+    cache.put = function(key, value, options) {
+      return originaPut.call(cache, transformKey(key), value, options);
+    };
+
+    var originaGet = cache.get;
+    cache.get = function(key, options) {
+      return originaGet.call(cache, transformKey(key), options);
+    };
+
+    return cache;
+  }
+
   /**
    * Initialize ForceNG
    * @param params
@@ -176,11 +200,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
 
     if(params.caching) {
       if (!CacheFactory.get('forceNgCache')) {
-        cache = CacheFactory('forceNgCache', {
-          maxAge: 60000,
-          deleteOnExpire: 'aggressive',
-          storageMode: 'localStorage'
-        });
+        cache = initCache();
       }
     }
 
@@ -233,7 +253,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
       '?display=touch' +
       '&response_type=token&client_id=' + appId+
       '&redirect_uri=' + oauthCallbackURL;
-  };
+  }
 
   function handleOauthRedirect(url, browserRef, deferred, interval) {
     if(url && _.startsWith(url, oauthCallbackURL)) {
@@ -358,6 +378,12 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
     };
   }
 
+  function cacheBustRequest(opts) {
+    if(!opts.cache || !opts.cache.get(opts.url)) {
+      var separator = opts.url.indexOf('?') === -1 ? '?' : '&';
+      opts.url +=  separator + 'cb=' + new Date().getTime();
+    }
+  }
 
   /**
    * Lets you make any Salesforce REST API request.
@@ -407,6 +433,7 @@ module.exports = function ($rootScope, $q, $window, $http, $timeout, $interval, 
         data: obj.data,
         cache: getCache()
       });
+      cacheBustRequest(opts);
 
       var reqId = uuid.v4();
 
